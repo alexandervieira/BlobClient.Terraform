@@ -1,0 +1,83 @@
+name: CI/CD - Frontend
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'bugfix/**'
+      - 'release/**'
+      - 'developer'      
+    paths:
+      - 'src/frontend/**'
+      - '.github/workflows/frontend.yml'
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_VERSION: '9.0.x'
+      BRANCH_NAME: ${{ github.ref_name }}
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependências
+        run: dotnet restore src/frontend/AVS.Webapp/AVS.Webapp.csproj
+
+      - name: Build
+        run: dotnet build src/frontend/AVS.Webapp/AVS.Webapp.csproj --configuration Release
+
+      - name: Teste (placeholder)
+        run: echo "Executar testes automatizados aqui"
+
+      - name: Verificar se é branch de deploy
+        id: check_env
+        run: |
+          if [[ "${BRANCH_NAME}" == "feature/*" ]]; then
+            echo "env=dev" >> $GITHUB_OUTPUT
+          elif [[ "${BRANCH_NAME}" == "bugfix/*" ]]; then
+            echo "env=dev" >> $GITHUB_OUTPUT
+          elif [[ "${BRANCH_NAME}" == "release/*" ]]; then
+            echo "env=prod" >> $GITHUB_OUTPUT
+          else
+            echo "env=none" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Encerrar se não for ambiente de deploy
+        if: steps.check_env.outputs.env == 'none'
+        run: echo "Branch de desenvolvimento - somente build/teste. Não haverá deploy."
+
+      - name: Publicar
+        if: steps.check_env.outputs.env != 'none'
+        run: dotnet publish src/frontend/AVS.Webapp/AVS.Webapp.csproj -c Release -o ./publish
+
+      - name: Login Azure
+        if: steps.check_env.outputs.env != 'none'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets['AZURE_CREDENTIALS_' + upper(steps.check_env.outputs.env)] }}
+
+      - name: Ler segredo do Key Vault
+        if: steps.check_env.outputs.env != 'none'
+        run: |
+          VALOR=$(az keyvault secret show \
+            --vault-name avs-keyvault-${{ steps.check_env.outputs.env }} \
+            --name meu-segredo \
+            --query value -o tsv)
+          echo "SECRET_VALUE=$VALOR" >> $GITHUB_ENV
+
+      - name: Deploy frontend
+        if: steps.check_env.outputs.env != 'none'
+        run: |
+          echo "Deploy para ambiente ${{ steps.check_env.outputs.env }}"
+          echo "Segredo do Key Vault: $SECRET_VALUE"
+          # Exemplo real:
+          # az webapp deployment source config-zip \
+          #   --resource-group rg-${{ steps.check_env.outputs.env }} \
+          #   --name webapp-${{ steps.check_env.outputs.env }} \
+          #   --src ./publish.zip
