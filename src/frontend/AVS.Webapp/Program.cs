@@ -1,3 +1,5 @@
+using AVS.Webapp.Services;
+
 namespace AVS.Webapp
 {
     public class Program
@@ -6,11 +8,19 @@ namespace AVS.Webapp
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Configuration
+                .SetBasePath(builder.Environment.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables();
+
             // Add services to the container.
             builder.Services.AddControllersWithViews();
-            builder.Services.AddHttpClient<Services.IServiceBlobClient, Services.ServiceBlobClient>(client =>
+            builder.Services.AddHttpClient<IServiceBlobClient, ServiceBlobClient>(client =>
             {
-                client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? throw new ArgumentNullException("Erro genérico"));
+                client.BaseAddress = new Uri(
+                    builder.Configuration["ApiBaseUrl"] ?? throw new InvalidOperationException("ApiBaseUrl configuration is missing or empty.")
+                );
             });
 
             var app = builder.Build();

@@ -33,7 +33,9 @@ BlobClient.Terraform/
 │   ├── main.tf                              # Main Terraform configuration
 │   ├── variables.tf                         # Variable definitions
 │   ├── provider.tf                          # Azure provider configuration
+│   ├── outputs.tf                           # Output definitions
 │   └── locals.tf                            # Local variables
+│    
 ├── .gitignore
 └── README.md
 ```

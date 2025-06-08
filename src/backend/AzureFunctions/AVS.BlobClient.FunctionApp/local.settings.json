@@ -3,11 +3,13 @@
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
-    "DOTNET_FUNCTIONS_VERSION": "9",
-    "KeyVaultUri": "https://blobclient-keyvault.vault.azure.net/",
+    "DOTNET_FUNCTIONS_VERSION": "9"    
+  },
+  "StorageAccountValues": {
+    "KeyVaultUri": "https://dev-kv-blobclient.vault.azure.net/",
     "StorageAccountName": "devsablobclient",
-    "StorageAccountKey": "your_storage_account_key_here",
-    "BlobName": "az900.jpg",
+    "KeyVaultSecret": "dev-kvs-blobclient",
+    "BlobName": "az900.png",
     "BlobContainerName": "images"
   }
 }
