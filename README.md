@@ -2,7 +2,7 @@
 
 Consulte o meu perfil <a href="https://github.com/alexandervsilva/alexandervsilva/blob/master/README.md">aqui</a>.
 
-<h1 align="center" style="font-weight: bold;">Meu Projeto 💻</h1>
+<h1 align="center" style="font-weight: bold;">BlobClient 💻</h1>
 
 ## Índice
 
@@ -21,7 +21,33 @@ Consulte a lista de comandos úteis do GIT <a href="https://github.com/alexander
 
 ## Estrutura do repositório
 
-Veja como navegar entre pastas aqui:
+```
+BlobClient.Terraform/
+├── src/
+│   ├── frontend/
+│   │   └── AVS.Webapp/                      # Frontend ASP.NET Core MVC application
+│   └── backend/
+│       └── AzureFunctions/
+│           └── AVS.BlobClient.FunctionApp/  # Azure Functions (.NET 9 Isolated)
+├── infra/
+│   ├── main.tf                              # Main Terraform configuration
+│   ├── variables.tf                         # Variable definitions
+│   ├── provider.tf                          # Azure provider configuration
+│   └── locals.tf                            # Local variables
+├── .gitignore
+└── README.md
+```
+
+### Descrição dos componentes:
+
+- **Frontend**: Aplicação web ASP.NET Core MVC
+- **Backend**: Azure Functions em .NET 9 (Isolated)
+- **Infra**: Configurações Terraform para provisionamento da infraestrutura Azure
+  - Storage Account
+  - Key Vault
+  - App Service Plan
+  - Azure Web App
+  - Azure Function App
 
 ## Erros e solicitações de recursos
 Tem um bug ou uma solicitação de recurso? Leia primeiro as [diretrizes do problema](https://reponame/blob/master/CONTRIBUTING.md)  e pesquise os problemas existentes e encerrados. [abra um novo problema](https://github.com/alexandervieira/Repositorio.Default/issues).

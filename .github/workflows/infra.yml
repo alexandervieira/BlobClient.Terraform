@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - 'feature/**'
-      - 'bugfix/**'
+      - 'hotfix/**'
       - 'release/**'
       - 'developer'      
     paths:
@@ -28,7 +28,7 @@ jobs:
         run: |
           if [[ "${BRANCH_NAME}" == "feature/*" ]]; then
             echo "env=dev" >> $GITHUB_OUTPUT
-          elif [[ "${BRANCH_NAME}" == "bugfix/*" ]]; then
+          elif [[ "${BRANCH_NAME}" == "hotfix/*" ]]; then
             echo "env=dev" >> $GITHUB_OUTPUT
           elif [[ "${BRANCH_NAME}" == "release/*" ]]; then
             echo "env=prod" >> $GITHUB_OUTPUT

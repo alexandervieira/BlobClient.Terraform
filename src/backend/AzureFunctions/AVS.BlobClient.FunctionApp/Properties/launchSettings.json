@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "AVS.BlobClient.FunctionApp": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7088"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "containerRunArguments": "--init",
+      "httpPort": 31909,
+      "useSSL": false
+    }
+  }
+}

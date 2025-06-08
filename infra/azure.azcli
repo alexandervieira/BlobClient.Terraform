@@ -1,0 +1,107 @@
+# Login to Azure
+# This script logs into Azure using the Azure CLI.
+az login
+
+az login --tenant b97818e5-218f-4f63-84c4-ff09a1e7dc80
+
+# Logout from Azure
+# This command logs out of the current Azure session.
+az logout
+
+# Show the current Azure account
+# This command displays the details of the currently logged-in Azure account.
+az account show
+
+# Get the Azure subscription
+az account show --query "id" --output tsv
+
+# Get Tenant ID
+# This command retrieves the Tenant ID of the current Azure account.
+az account show --query tenantId --output tsv
+
+# Set Service Principal for Azure CLI
+# This command sets the Service Principal for the Azure CLI, allowing it to authenticate and manage resources.
+az ad sp create-for-rbac --name "github-sp-dev" --role Contributor --scopes /subscriptions/cac4fe70-05a8-4e1d-88da-b1bc51aca654/resourceGroups/rg-dev-blobclient --sdk-auth
+
+az ad sp create-for-rbac --name "github-sp-dev" --role Contributor --scopes /subscriptions/bfce7383-81ce-4411-9bb6-4391c6f04c23/resourceGroups/rg-dev-blobclient --sdk-auth | ConvertFrom-Json | ConvertTo-Json -Compress
+
+# Set Policy for Key Vault
+# This command sets the access policy for a Key Vault, allowing a Service Principal to manage secrets.
+az keyvault set-policy \
+  --name dev-blobclient-keyvault \
+  --spn b8038fdc-05a3-423e-8d6d-50ef55113fde \
+  --secret-permissions get list
+
+# Show Key Vault ID
+# This command retrieves the ID of the specified Key Vault.
+az keyvault show --name dev-blobclient-keyvault --query id --output tsv
+
+az role assignment create \
+  --assignee b8038fdc-05a3-423e-8d6d-50ef55113fde \
+  --role "Key Vault Secrets User" \
+  --scope /subscriptions/bfce7383-81ce-4411-9bb6-4391c6f04c23/resourceGroups/rg-dev-blobclient/providers/Microsoft.KeyVault/vaults/dev-blobclient-keyvault
+
+
+#INICIO power shell script
+$vaultName = "dev-blobclient-keyvault"
+
+$kvScope = az keyvault show --name $vaultName --query id --output tsv
+
+$clientId = "b8038fdc-05a3-423e-8d6d-50ef55113fde"
+
+az role assignment create `
+  --assignee $clientId `
+  --role "Key Vault Secrets User" `
+  --scope $kvScope
+
+#FIM power shell script to set policy for Key Vault
+
+az keyvault secret show --vault-name dev-blobclient-keyvault --name dev-blobclient-secret --query value -o tsv
+az keyvault secret show --vault-name <keyvault-name> --name <secret-name> --query value -o tsv
+
+az vm list-usage --location "BrazilSouth" --output table
+
+# initialize Terraform
+# This command initializes the Terraform working directory, downloading necessary providers and setting up the backend.
+terraform init
+
+# Validate the Terraform configuration
+# This command checks the Terraform configuration files for syntax errors and other issues.
+terraform validate
+
+# Plan the Terraform deployment
+# This command creates an execution plan, showing what actions Terraform will take to change the infrastructure.
+terraform plan
+
+# Apply the Terraform plan
+# This command applies the changes required to reach the desired state of the configuration.
+terraform apply -auto-approve
+
+# Output the Terraform state
+# This command outputs the current state of the Terraform-managed infrastructure.
+terraform output
+
+# Clean up resources
+# This command destroys all resources managed by Terraform, cleaning up the environment.
+terraform destroy -auto-approve
+
+# Format Terraform files
+terraform fmt -recursive
+
+# List Terraform workspaces
+terraform workspace list
+
+# Create a new Terraform workspace
+terraform workspace new Development
+
+# Select a Terraform workspace
+terraform workspace select default
+
+# Show the current Terraform workspace
+terraform workspace show
+
+# Delete a Terraform workspace
+terraform workspace delete development
+
+# Show the current Terraform state
+terraform state list

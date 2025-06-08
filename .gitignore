@@ -396,3 +396,40 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Diretórios e arquivos do Terraform
+.terraform/
+.terraform.lock.hcl
+
+# Diretórios de estado do Terraform
+terraform.tfstate.d/
+
+# Arquivos de estado (contêm dados sensíveis)
+*.tfstate
+*.tfstate.backup
+
+# Overrides locais e variáveis pessoais
+*.tfvars
+*.tfvars.json
+terraform.tfvars
+
+# Planos de execução
+*.tfplan
+
+# Logs e outputs temporários
+crash.log
+*.log
+
+# Arquivos de backup do editor
+*.swp
+*.bak
+*.tmp
+
+# IDEs (exemplos)
+.vscode/
+.idea/
+*.code-workspace
+
+# MacOS / Linux / Windows
+.DS_Store
+Thumbs.db
