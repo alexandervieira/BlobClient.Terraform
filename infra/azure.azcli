@@ -59,7 +59,16 @@ az role assignment create `
 az keyvault secret show --vault-name dev-blobclient-keyvault --name dev-blobclient-secret --query value -o tsv
 az keyvault secret show --vault-name <keyvault-name> --name <secret-name> --query value -o tsv
 
-az vm list-usage --location "BrazilSouth" --output table
+az vm list-usage --location "BrazilSouth" --output 
+
+
+export TF_VAR_github_token="ghp_xxxSEU_TOKEN_AQUIxxx" # ⚠️ Substitua por um valor real
+
+# Dono dos repositórios (usuário ou organização GitHub)
+export TF_VAR_github_owner="your-github-username-or-org"
+
+# Azure Subscription ID
+export TF_VAR_subscription_id="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 # initialize Terraform
 # This command initializes the Terraform working directory, downloading necessary providers and setting up the backend.
@@ -76,6 +85,9 @@ terraform plan
 # Apply the Terraform plan
 # This command applies the changes required to reach the desired state of the configuration.
 terraform apply -auto-approve
+
+# Enable debug logging for Terraform
+TF_LOG=DEBUG terraform apply
 
 # Output the Terraform state
 # This command outputs the current state of the Terraform-managed infrastructure.

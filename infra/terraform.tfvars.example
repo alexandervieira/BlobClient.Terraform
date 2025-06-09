@@ -1,0 +1,32 @@
+# ========================
+# EXEMPLO DE CONFIGURAÇÃO
+# ========================
+# Copie este arquivo para terraform.tfvars
+# e preencha os valores reais com segurança.
+# NUNCA versionar terraform.tfvars com dados sensíveis.
+
+# GitHub Personal Access Token (usado pelo provedor GitHub)
+# Crie em: https://github.com/settings/tokens
+# Recomendado escopos: repo, workflow, admin:repo_hook
+github_token = "ghp_your_token_here" # ⚠️ Substitua por um valor real
+
+# Dono dos repositórios (usuário ou organização GitHub)
+github_owner = "your-github-username-or-org"
+
+# Nome do repositório que será criado ou manipulado
+repository_name = "my-infra-repo"
+
+# Azure Service Principal Client ID
+client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# Azure Service Principal Client Secret
+client_secret = "your-client-secret"
+
+# Azure Tenant ID
+tenant_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# Azure Subscription ID
+subscription_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# Azure Object ID (do Service Principal)
+#object_id  = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"

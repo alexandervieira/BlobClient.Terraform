@@ -8,7 +8,7 @@
   "StorageAccountValues": {
     "KeyVaultUri": "https://dev-kv-blobclient.vault.azure.net/",
     "StorageAccountName": "devsablobclient",
-    "KeyVaultSecret": "dev-kvs-blobclient",
+    "KeyVaultSecret": "dev-kvs-storage-blobclient",
     "BlobName": "az900.png",
     "BlobContainerName": "images"
   }

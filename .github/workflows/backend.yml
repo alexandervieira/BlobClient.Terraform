@@ -11,12 +11,19 @@ on:
       - 'src/backend/**'
       - '.github/workflows/backend.yml'
 
+  workflow_run:
+    workflows: ["Infra"]
+    types:
+      - completed
+
 jobs:
   build-test-deploy:
+    if: ${{ github.event_name == 'workflow_run' || github.event_name == 'push' }}
     runs-on: ubuntu-latest
     env:
       DOTNET_VERSION: '9.0.x'
       BRANCH_NAME: ${{ github.ref_name }}
+      #AZURE_CREDENTIALS: ''
     steps:
       - name: Checkout código
         uses: actions/checkout@v3
@@ -56,28 +63,48 @@ jobs:
         if: steps.check_env.outputs.env != 'none'
         run: dotnet publish src/backend/AzureFunctions/AVS.BlobClient.FunctionApp/AVS.BlobClient.FunctionApp.csproj -c Release -o ./publish
 
+      - name: Set Azure Credentials from Secret
+        if: steps.check_env.outputs.env != 'none'
+        env:
+          ENV: ${{ steps.check_env.outputs.env }}
+        run: |
+          echo "Ambiente: $ENV"
+          
+          case "$ENV" in
+            dev)
+              echo "AZURE_CREDENTIALS=${{ secrets.AZURE_CREDENTIALS_DEV }}" >> $GITHUB_ENV
+              ;;
+            prod)
+              echo "AZURE_CREDENTIALS=${{ secrets.AZURE_CREDENTIALS_PROD }}" >> $GITHUB_ENV
+              ;;            
+            *)
+              echo "Ambiente inválido: $ENV"
+              exit 1
+              ;;
+          esac  
+
       - name: Login Azure
         if: steps.check_env.outputs.env != 'none'
         uses: azure/login@v1
         with:
-          creds: ${{ secrets['AZURE_CREDENTIALS_' + upper(steps.check_env.outputs.env)] }}
+          creds: ${{ github.env.AZURE_CREDENTIALS }}
 
       - name: Ler segredo do Key Vault
         if: steps.check_env.outputs.env != 'none'
         run: |
           VALOR=$(az keyvault secret show \
-            --vault-name avs-keyvault-${{ steps.check_env.outputs.env }} \
-            --name meu-segredo \
+            --vault-name ${{ steps.check_env.outputs.env }}-kv-blobclient \
+            --name ${{ steps.check_env.outputs.env }}-kvs-blobclient \
             --query value -o tsv)
+          echo "Segredo lido do Key Vault: $VALOR"
           echo "SECRET_VALUE=$VALOR" >> $GITHUB_ENV
 
       - name: Deploy backend
         if: steps.check_env.outputs.env != 'none'
         run: |
           echo "Deploy para ambiente ${{ steps.check_env.outputs.env }}"
-          echo "Segredo do Key Vault: $SECRET_VALUE"
-          # Exemplo real:
+          echo "Segredo do Key Vault: $SECRET_VALUE"          
           # az functionapp deployment source config-zip \
-          #   --resource-group rg-${{ steps.check_env.outputs.env }} \
-          #   --name funcapp-${{ steps.check_env.outputs.env }} \
+          #   --resource-group ${{ steps.check_env.outputs.env }}-rg-blobclient \
+          #   --name ${{ steps.check_env.outputs.env }}-fa-blobclient \
           #   --src ./publish.zip

@@ -8,7 +8,7 @@ resource "azurerm_resource_group" "rg" {
 }
 
 # Criação do Storage Account
-resource "azurerm_storage_account" "blob" {
+resource "azurerm_storage_account" "storage" {
   name                     = local.storage_account_name
   resource_group_name      = azurerm_resource_group.rg.name
   location                 = azurerm_resource_group.rg.location
@@ -57,8 +57,8 @@ resource "azurerm_key_vault" "vault_blobclient" {
 
 # Criação do segredo no Key Vault para armazenar a chave de acesso ao Blob
 resource "azurerm_key_vault_secret" "blob_storage_key" {
-  name         = local.key_vault_secret_name
-  value        = azurerm_storage_account.blob.primary_access_key # Substitua pela chave real ou outra variável
+  name         = local.key_vault_secret_storage_name
+  value        = azurerm_storage_account.storage.primary_access_key # Substitua pela chave real ou outra variável
   key_vault_id = azurerm_key_vault.vault_blobclient.id
 
   tags = {
@@ -66,17 +66,16 @@ resource "azurerm_key_vault_secret" "blob_storage_key" {
   }
 }
 
-# Criação da política de acesso do Key Vault para o Terraform
-/* resource "azurerm_key_vault_access_policy" "terraform" {
+# Criação do segredo no Key Vault para armazenar a chave de acesso ao Blob (para uso em GitHub Actions)
+resource "azurerm_key_vault_secret" "azure_credentials_key" {
+  name         = local.key_vault_secret_azcredentials_name
+  value        = github_actions_secret.azure_credentials.plaintext_value
   key_vault_id = azurerm_key_vault.vault_blobclient.id
-  tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = data.azurerm_client_config.current.object_id
 
-  secret_permissions = [
-    "Get",
-    "Set",
-  ]
-} */
+  tags = {
+    environment = terraform.workspace
+  }
+}
 
 # Criação do App Service Plan para o Frontend (ASP.NET Core MVC)
 resource "azurerm_app_service_plan" "frontend_plan" {
@@ -105,7 +104,7 @@ resource "azurerm_linux_web_app" "frontend" {
 
   app_settings = {
     "ASPNETCORE_ENVIRONMENT" = terraform.workspace
-    "AzureWebJobsStorage"    = azurerm_storage_account.blob.primary_connection_string
+    "AzureWebJobsStorage"    = azurerm_storage_account.storage.primary_connection_string
     "KeyVaultUri"            = azurerm_key_vault.vault_blobclient.vault_uri
   }
 
@@ -145,8 +144,8 @@ resource "azurerm_linux_function_app" "backend" {
   location                    = azurerm_resource_group.rg.location
   resource_group_name         = azurerm_resource_group.rg.name
   service_plan_id             = azurerm_app_service_plan.backend_plan.id
-  storage_account_name        = azurerm_storage_account.blob.name
-  storage_account_access_key  = azurerm_storage_account.blob.primary_access_key
+  storage_account_name        = azurerm_storage_account.storage.name
+  storage_account_access_key  = azurerm_storage_account.storage.primary_access_key
   functions_extension_version = "~4"
 
   app_settings = {
@@ -165,4 +164,51 @@ resource "azurerm_linux_function_app" "backend" {
   tags = {
     environment = terraform.workspace
   }
+}
+
+resource "azuread_application" "principal" {
+  display_name = local.azuread_application_name
+  owners       = [data.azurerm_client_config.current.object_id]
+}
+
+resource "azuread_service_principal" "service_principal" {
+  client_id = azuread_application.principal.client_id
+  owners    = [data.azurerm_client_config.current.object_id]
+}
+
+resource "azuread_service_principal_password" "client_secret" {
+  service_principal_id = azuread_service_principal.service_principal.id
+  end_date             = "2099-12-31T23:59:59Z" # Defina uma data de expiração adequada
+  display_name         = local.azuread_service_principal_password_name
+}
+
+# Create GitHub Actions secrets
+resource "github_actions_secret" "azure_credentials" {
+  repository  = var.github_repository
+  secret_name = local.azure_credential_name
+  plaintext_value = jsonencode({
+    clientId       = data.azurerm_client_config.current.client_id
+    clientSecret   = azuread_service_principal_password.client_secret.value
+    objectId       = data.azurerm_client_config.current.object_id
+    subscriptionId = var.subscription_id
+    tenantId       = data.azurerm_client_config.current.tenant_id
+  })
+}
+
+resource "github_actions_secret" "terraform_workspace" {
+  repository      = var.github_repository
+  secret_name     = local.github_tf_workspace_name
+  plaintext_value = local.workspace_name
+}
+
+resource "github_actions_secret" "storage_account_key" {
+  repository      = var.github_repository
+  secret_name     = local.github_storage_account_key
+  plaintext_value = azurerm_storage_account.storage.primary_access_key
+}
+
+resource "github_actions_secret" "key_vault_uri" {
+  repository      = var.github_repository
+  secret_name     = local.github_key_vault_uri
+  plaintext_value = azurerm_key_vault.vault_blobclient.vault_uri
 }

@@ -7,10 +7,9 @@ output "function_app_url" {
 }
 
 output "storage_account_url" {
-  value = azurerm_storage_account.blob.primary_blob_endpoint
+  value = azurerm_storage_account.storage.primary_blob_endpoint
 }
 
 output "keyvault_uri" {
   value = azurerm_key_vault.vault_blobclient.vault_uri
 }
-
