@@ -71,7 +71,7 @@ jobs:
           echo "ARM_CLIENT_SECRET=${{ fromJSON(secrets.AZURE_CREDENTIALS_PROD).clientSecret }}" >> $GITHUB_ENV
           echo "ARM_SUBSCRIPTION_ID=${{ fromJSON(secrets.AZURE_CREDENTIALS_PROD).subscriptionId }}" >> $GITHUB_ENV
           echo "ARM_TENANT_ID=${{ fromJSON(secrets.AZURE_CREDENTIALS_PROD).tenantId }}" >> $GITHUB_ENV
-          echo "GITHUB_TOKEN=${{ secrets.GH_PAT }}" >> $GITHUB_ENV         
+          echo "GITHUB_TOKEN=${{ secrets.GH_PAT }}" >> $GITHUB_ENV
 
       - name: Terraform Init
         if: steps.check_changes.outputs.skip != 'true'
@@ -82,6 +82,9 @@ jobs:
         run: |
           terraform workspace select ${{ steps.check_env.outputs.env }} || terraform workspace new ${{ steps.check_env.outputs.env }}
 
+      - name: Terraform Format
+        if: steps.check_changes.outputs.skip != 'true'
+        run: terraform fmt -check
       - name: Terraform Validate
         if: steps.check_changes.outputs.skip != 'true'
         run: terraform validate
